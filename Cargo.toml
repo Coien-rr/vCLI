@@ -2,6 +2,13 @@
 name = "vcli"
 version = "0.1.0"
 edition = "2021"
+authors = "Coien-rr <972054003@qq.com>"
+license = "MIT"
+description = "my tiny CLI for init C++ Project"
+readme = "README.md"
+repository = "https://github.com/Coien-rr/vCLI"
+keywords = ["cli", "init", "demo"]
+categories = ["command-line-utilities"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
