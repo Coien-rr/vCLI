@@ -34,6 +34,10 @@
     "    std::cout << \"Hello, {}!\" << std::endl;",
     "    return 0;",
     "}"
+  ],
+  "run_sh": [
+    "#!/bin/bash",
+    "cd .. && mkdir build && cd build && cmake .. && make -j && ./main"
   ]
 }
 

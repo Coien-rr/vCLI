@@ -1,7 +1,7 @@
 #![allow(unused)]
 
 use serde::{Deserialize, Serialize};
-use serde_json;
+use serde_json::Value;
 use std::env;
 use std::fs::{self, create_dir, File};
 use std::io::{self, Read, Write};
@@ -12,6 +12,7 @@ struct Template {
     dir_info: FileTree,
     cmake_lists: Vec<String>,
     main_cpp: Vec<String>,
+    run_sh: Vec<String>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -23,25 +24,19 @@ struct FileTree {
     scripts: Vec<String>,
 }
 
+const FILE_TREE_JSON: &str = include_str!("../templates/cpp.json");
+
 fn main() {
     let args: Vec<String> = env::args().collect();
-    if args.len() != 3 {
-        println!("Usage: cargo run -- <template_file> <project_name>");
+    if args.len() != 2 {
+        println!("Usage: vCLI <project_name>");
         return;
     }
 
-    // 1. read template file
-    let template_file = &args[1];
-    let mut template_content = String::new();
-    File::open(template_file)
-        .and_then(|mut file| file.read_to_string(&mut template_content))
-        .expect("Fail to to read template content");
-
-    // 1.1 Serialize the content to json format
     let template: Template =
-        serde_json::from_str(&template_content).expect("Failed to parse template JSON");
+        serde_json::from_str(&FILE_TREE_JSON).expect("Failed to parse template JSON");
 
-    let project_name = &args[2];
+    let project_name = &args[1];
     if Path::new(project_name).exists() {
         println!("Target Project {} Already Exists!", project_name);
         return;
@@ -54,6 +49,7 @@ fn main() {
     create_directory(&project_path, &template.dir_info.src);
     create_directory(&project_path, &template.dir_info.app);
     create_directory(&project_path, &template.dir_info.tests);
+    create_directory(&project_path, &template.dir_info.scripts);
 
     let cmake_lists = template.cmake_lists.join("\n").replace("{}", project_name);
     let cmake_lists_path = project_path.join("CMakeLists.txt");
@@ -70,6 +66,16 @@ fn main() {
     main_cpp_file
         .write_all(main_cpp.as_bytes())
         .expect("ERROR: Failed to Write main.cc");
+
+    let run_sh = template.run_sh.join("\n");
+    let run_sh_path = project_path
+        .join(&template.dir_info.scripts[0])
+        .join("run.sh");
+    let mut run_sh_file =
+        File::create(run_sh_path).expect("ERROR: Failed to create scripts/run.sh");
+    run_sh_file
+        .write_all(run_sh.as_bytes())
+        .expect("ERROR: Failed to Write run.sh");
 
     println!("C++ project {} initialized successfully!", project_name);
 }
