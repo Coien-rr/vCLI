@@ -1,0 +1,39 @@
+{
+  "dir_info": {
+    "include": [
+      "include",
+      "include/utils"
+    ],
+    "src": [
+      "src",
+      "src/core",
+      "src/utils"
+    ],
+    "tests": [
+      "tests"
+    ],
+    "app": [
+      "app"
+    ],
+    "scripts": [
+      "scripts"
+    ]
+  },
+  "cmake_lists": [
+    "cmake_minimum_required(VERSION 3.10)",
+    "project({})",
+    "",
+    "set(CMAKE_CXX_STANDARD 11)",
+    "",
+    "add_executable(main main.cc)"
+  ],
+  "main_cpp": [
+    "#include <iostream>",
+    "",
+    "int main() {",
+    "    std::cout << \"Hello, {}!\" << std::endl;",
+    "    return 0;",
+    "}"
+  ]
+}
+
