@@ -24,15 +24,35 @@
     "project({})",
     "",
     "set(CMAKE_CXX_STANDARD 11)",
-    "",
-    "add_executable(main main.cc)"
+    "include_directories(${PROJECT_SOURCE_DIR}/include)",
+    "add_executable(main main.cc)",
+    "target_link_libraries(main ${PROJECT_NAME})",
+    "add_subdirectory(src)"
+  ],
+  "src_cmake": [
+    "set(PROJECT_NAME ${CMAKE_PROJECT_NAME})",
+    "set(CMAKE_CXX_STANDARD 11)",
+    "set(CPP_SOURCES hello.cc)",
+    "add_library(${PROJECT_NAME} ${CPP_SOURCES})",
+    "add_library(${PROJECT_NAME}_lib STATIC ${CPP_SOURCES})",
+    "install()"
   ],
   "main_cpp": [
-    "#include <iostream>",
-    "",
+    "#include \"hello.h\"",
     "int main() {",
-    "    std::cout << \"Hello, {}!\" << std::endl;",
+    "    hello();",
     "    return 0;",
+    "}"
+  ],
+  "include_hello": [
+    "#pragma once",
+    "void hello();"
+  ],
+  "src_hello":[
+    "#include <iostream>",
+    "#include \"hello.h\"",
+    "void hello() {",
+    "    std::cout << \"Hello, {}!\" << std::endl;",
     "}"
   ],
   "run_sh": [

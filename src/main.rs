@@ -11,7 +11,10 @@ use std::path::{Path, PathBuf};
 struct Template {
     dir_info: FileTree,
     cmake_lists: Vec<String>,
+    src_cmake: Vec<String>,
     main_cpp: Vec<String>,
+    include_hello: Vec<String>,
+    src_hello: Vec<String>,
     run_sh: Vec<String>,
 }
 
@@ -51,31 +54,46 @@ fn main() {
     create_directory(&project_path, &template.dir_info.tests);
     create_directory(&project_path, &template.dir_info.scripts);
 
-    let cmake_lists = template.cmake_lists.join("\n").replace("{}", project_name);
+    let cmake_lists = template.cmake_lists.join("\n").replace("{}", &project_name);
     let cmake_lists_path = project_path.join("CMakeLists.txt");
-    let mut cmake_lists_file =
-        File::create(cmake_lists_path).expect("Failing to Create CMakeLists.txt");
+    if let Err(err) = write_file(&cmake_lists_path, &[cmake_lists.clone()]) {
+        eprintln!("Error writing to file: {}", err);
+    }
 
-    cmake_lists_file
-        .write_all(cmake_lists.as_bytes())
-        .expect("Failed to write CMakeLists.txt");
+    let src_cmake_path = project_path
+        .join(&template.dir_info.src[0])
+        .join("CMakeLists.txt");
+    if let Err(err) = write_file(&src_cmake_path, &template.src_cmake) {
+        eprintln!("Error writing to file: {}", err);
+    }
 
-    let main_cpp = template.main_cpp.join("\n").replace("{}", &project_name);
+    let include_hello_path = project_path
+        .join(&template.dir_info.include[0])
+        .join("hello.h");
+    if let Err(err) = write_file(&include_hello_path, &template.include_hello) {
+        eprintln!("Error writing to file: {}", err);
+    }
+
+    let src_hello = template.src_hello.join("\n").replace("{}", &project_name);
+    let src_hello_path = project_path
+        .join(&template.dir_info.src[0])
+        .join("hello.cc");
+    if let Err(err) = write_file(&src_hello_path, &[src_hello.clone()]) {
+        eprintln!("Error writing to file: {}", err);
+    }
+
     let main_cpp_path = project_path.join("main.cc");
-    let mut main_cpp_file = File::create(main_cpp_path).expect("ERROR: Failed to Create main.cc");
-    main_cpp_file
-        .write_all(main_cpp.as_bytes())
-        .expect("ERROR: Failed to Write main.cc");
+    if let Err(err) = write_file(&main_cpp_path, &template.main_cpp) {
+        eprintln!("Error writing to file: {}", err);
+    }
 
-    let run_sh = template.run_sh.join("\n");
     let run_sh_path = project_path
         .join(&template.dir_info.scripts[0])
         .join("run.sh");
-    let mut run_sh_file =
-        File::create(run_sh_path).expect("ERROR: Failed to create scripts/run.sh");
-    run_sh_file
-        .write_all(run_sh.as_bytes())
-        .expect("ERROR: Failed to Write run.sh");
+
+    if let Err(err) = write_file(&run_sh_path, &template.run_sh) {
+        eprintln!("Error writing to file: {}", err);
+    }
 
     println!("C++ project {} initialized successfully!", project_name);
 }
@@ -85,4 +103,13 @@ fn create_directory(parent_path: &Path, directories: &[String]) {
         let dir_path = parent_path.join(dir);
         fs::create_dir_all(&dir_path).expect("ERROR: Failed to create directory");
     }
+}
+
+fn write_file(file_path: &Path, contents: &[String]) -> io::Result<()> {
+    let mut target = File::create(file_path)?;
+    for line in contents {
+        target.write_all(line.as_bytes())?;
+        target.write_all(b"\n")?;
+    }
+    Ok(())
 }
