@@ -74,14 +74,14 @@ fn main() {
         eprintln!("Error writing to file: {}", err);
     }
 
+    let src_hello = template.src_hello.join("\n").replace("{}", &project_name);
     let src_hello_path = project_path
         .join(&template.dir_info.src[0])
         .join("hello.cc");
-    if let Err(err) = write_file(&src_hello_path, &template.src_hello) {
+    if let Err(err) = write_file(&src_hello_path, &[src_hello.clone()]) {
         eprintln!("Error writing to file: {}", err);
     }
 
-    // let main_cpp = template.main_cpp.join("\n").replace("{}", &project_name);
     let main_cpp_path = project_path.join("main.cc");
     if let Err(err) = write_file(&main_cpp_path, &template.main_cpp) {
         eprintln!("Error writing to file: {}", err);
