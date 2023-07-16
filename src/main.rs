@@ -60,9 +60,30 @@ fn main() {
         eprintln!("Error writing to file: {}", err);
     }
 
-    let main_cpp = template.main_cpp.join("\n").replace("{}", &project_name);
+    let src_cmake_path = project_path
+        .join(&template.dir_info.src[0])
+        .join("CMakeLists.txt");
+    if let Err(err) = write_file(&src_cmake_path, &template.src_cmake) {
+        eprintln!("Error writing to file: {}", err);
+    }
+
+    let include_hello_path = project_path
+        .join(&template.dir_info.include[0])
+        .join("hello.h");
+    if let Err(err) = write_file(&include_hello_path, &template.include_hello) {
+        eprintln!("Error writing to file: {}", err);
+    }
+
+    let src_hello_path = project_path
+        .join(&template.dir_info.src[0])
+        .join("hello.cc");
+    if let Err(err) = write_file(&src_hello_path, &template.src_hello) {
+        eprintln!("Error writing to file: {}", err);
+    }
+
+    // let main_cpp = template.main_cpp.join("\n").replace("{}", &project_name);
     let main_cpp_path = project_path.join("main.cc");
-    if let Err(err) = write_file(&main_cpp_path, &[main_cpp.clone()]) {
+    if let Err(err) = write_file(&main_cpp_path, &template.main_cpp) {
         eprintln!("Error writing to file: {}", err);
     }
 
