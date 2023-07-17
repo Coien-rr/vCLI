@@ -1,11 +1,21 @@
 #![allow(unused)]
 
+use clap::Parser;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::env;
 use std::fs::{self, create_dir, File};
 use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
+
+#[derive(Parser, Debug)]
+#[command(author, version, about = "A tiny CLI for Init project")]
+struct Args {
+    /// the target project name
+    project_name: String,
+    #[arg(short, long, default_value_t = String::from("cpp"))]
+    language: String,
+}
 
 #[derive(Deserialize, Serialize, Debug)]
 struct Template {
@@ -30,16 +40,12 @@ struct FileTree {
 const FILE_TREE_JSON: &str = include_str!("../templates/cpp.json");
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    if args.len() != 2 {
-        println!("Usage: vCLI <project_name>");
-        return;
-    }
+    let args = Args::parse();
 
     let template: Template =
         serde_json::from_str(&FILE_TREE_JSON).expect("Failed to parse template JSON");
 
-    let project_name = &args[1];
+    let project_name = &args.project_name;
     if Path::new(project_name).exists() {
         println!("Target Project {} Already Exists!", project_name);
         return;
