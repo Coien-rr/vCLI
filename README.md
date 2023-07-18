@@ -25,19 +25,34 @@ cargo install vcli
 ```
 
 ## 🚀 Usage
+
+You can use vCLI just wiht your target project name
+
 ``` sh
 vcli <project-name>
 ```
+
+**vCLI use cpp as default template**, so you can use it to init cpp project without additional flag.
 simple example as follow: 
 ``` sh
 vcli hello-world
 ```
 
-### 🌲 Template Structure
+In Addition, you need add language flag `-l` or `--language` to specify the lang of target, if you want use it for extra template. Simple shell example as follow: 
+```sh
+vcli hello-world -l shell
+```
+
+### ✨ Supported Language
+- C++
+- Shell
+
+### 🌲 Template Structure (CPP version)
 ```
 ├── app/
 ├── include
 │   ├── utils/
+│   ├── hello.h
 │   └── your header file...
 ├── scripts/
 │   ├── run.sh
@@ -45,6 +60,8 @@ vcli hello-world
 ├── src
 │   ├── core/ 
 │   ├── utils/
+│   ├── CMakeLists.txt
+│   ├── hello.cc
 │   └── your source file...
 ├── tests/
 ├── CMakeLists.txt
