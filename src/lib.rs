@@ -18,6 +18,7 @@ pub struct Args {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Template {
     pub dir_list: Vec<String>,
+    pub file_list: Vec<String>,
     pub file_contents: FileContents,
     pub dir_info: FileTree,
 }
@@ -33,7 +34,7 @@ pub struct FileTree {
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct FileContents {
-    cmakelist_txt: Vec<String>,
+    cmakelists_txt: Vec<String>,
     main_cc: Vec<String>,
     src_cmakelists_txt: Vec<String>,
     src_hello_cc: Vec<String>,
@@ -88,14 +89,17 @@ fn write_file(file_path: &Path, contents: &[String]) -> io::Result<()> {
 
 pub fn generate_files(
     project_path: &Path,
+    project_name: String,
     file_list: &[String],
-    file_template: &FileContents,
+    file_template: &mut FileContents,
 ) -> io::Result<()> {
+    file_template.cmakelists_txt[1] = file_template.cmakelists_txt[1].replace("{}", &project_name);
+    file_template.src_hello_cc[3] = file_template.src_hello_cc[3].replace("{}", &project_name);
     for file in file_list {
         let content = convert_to_snake_case(&file);
         let file_path = project_path.join(&file);
         match content.as_str() {
-            "cmakelists_txt" => write_file(&file_path, &file_template.cmakelist_txt),
+            "cmakelists_txt" => write_file(&file_path, &file_template.cmakelists_txt),
             "main_cc" => write_file(&file_path, &file_template.main_cc),
             "src_cmakelists_txt" => write_file(&file_path, &file_template.src_cmakelists_txt),
             "src_hello_cc" => write_file(&file_path, &file_template.src_hello_cc),

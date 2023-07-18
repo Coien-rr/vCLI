@@ -10,6 +10,7 @@
     "CMakeLists.txt",
     "main.cc",
     "src/hello.cc",
+    "src/CMakeLists.txt",
     "include/hello.h",
     "scripts/run.sh"
   ],

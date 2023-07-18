@@ -15,7 +15,7 @@ const FILE_TREE_JSON: &str = include_str!("../templates/cpp.json");
 fn main() {
     let args = Args::parse();
 
-    let template: Template =
+    let mut template: Template =
         serde_json::from_str(&FILE_TREE_JSON).expect("Failed to parse template JSON");
 
     let project_name = &args.project_name;
@@ -32,7 +32,12 @@ fn main() {
         eprintln!("ERROR generate_dir {}", err);
     }
 
-    if let Err(err) = generate_files(&project_path, &template.dir_list, &template.file_contents) {
+    if let Err(err) = generate_files(
+        &project_path,
+        project_name.clone(),
+        &template.file_list,
+        &mut template.file_contents,
+    ) {
         eprintln!("Error writing to file: {}", err);
     }
 
