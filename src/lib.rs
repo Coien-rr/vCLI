@@ -6,6 +6,8 @@ use std::fs::{self, write, File};
 use std::io::{self, Write};
 use std::path::Path;
 
+mod utils;
+
 #[derive(Parser, Debug)]
 #[command(author, version, about = "A tiny CLI for Init project")]
 pub struct Args {
@@ -96,7 +98,7 @@ pub fn generate_files(
     file_template.cmakelists_txt[1] = file_template.cmakelists_txt[1].replace("{}", &project_name);
     file_template.src_hello_cc[3] = file_template.src_hello_cc[3].replace("{}", &project_name);
     for file in file_list {
-        let content = convert_to_snake_case(&file);
+        let content = utils::convert_to_snake_case(&file);
         let file_path = project_path.join(&file);
         match content.as_str() {
             "cmakelists_txt" => write_file(&file_path, &file_template.cmakelists_txt),
@@ -110,21 +112,5 @@ pub fn generate_files(
     }
 
     Ok(())
-}
-
-fn convert_to_snake_case(input: &str) -> String {
-    let mut output = String::new();
-
-    for (i, c) in input.chars().enumerate() {
-        if c == '/' || c == '.' {
-            if i > 0 {
-                output.push('_');
-            }
-        } else {
-            output.push(c.to_ascii_lowercase());
-        }
-    }
-
-    output
 }
 
