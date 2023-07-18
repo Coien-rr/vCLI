@@ -25,8 +25,11 @@ fn main() {
 
     match language {
         "cpp" => lang::cpp::init_cpp(project_name),
-        "shell" => lang::shell::hello_shell(),
-        _ => return,
+        "shell" => lang::shell::init_shell(project_name),
+        _ => println!(
+            "No Support for {} yet, Please Check Docs For Correct Useage!",
+            language
+        ),
     };
 
     return;
