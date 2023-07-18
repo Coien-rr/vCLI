@@ -1,0 +1,116 @@
+#![allow(unused)]
+
+use clap::Parser;
+use serde::{Deserialize, Serialize};
+use std::fs::{self, write, File};
+use std::io::{self, Write};
+use std::path::Path;
+
+mod utils;
+
+#[derive(Parser, Debug)]
+#[command(author, version, about = "A tiny CLI for Init project")]
+pub struct Args {
+    /// the target project name
+    pub project_name: String,
+    #[arg(short, long, default_value_t = String::from("cpp"))]
+    pub language: String,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct Template {
+    pub dir_list: Vec<String>,
+    pub file_list: Vec<String>,
+    pub file_contents: FileContents,
+    pub dir_info: FileTree,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct FileTree {
+    include: Vec<String>,
+    src: Vec<String>,
+    tests: Vec<String>,
+    app: Vec<String>,
+    scripts: Vec<String>,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct FileContents {
+    cmakelists_txt: Vec<String>,
+    main_cc: Vec<String>,
+    src_cmakelists_txt: Vec<String>,
+    src_hello_cc: Vec<String>,
+    include_hello_h: Vec<String>,
+    scripts_run_sh: Vec<String>,
+}
+
+pub fn get_dir_lists<'a>(filetree: &'a FileTree, dir: String) -> &'a [String] {
+    match dir.as_str() {
+        "include" => &filetree.include,
+        "src" => &filetree.src,
+        "tests" => &filetree.tests,
+        "app" => &filetree.app,
+        "scripts" => &filetree.scripts,
+        _ => panic!("Invalid directory"),
+    }
+}
+
+fn create_directory(parent_path: &Path, directories: &[String]) -> io::Result<()> {
+    for dir in directories {
+        let dir_path = parent_path.join(dir);
+        fs::create_dir_all(&dir_path).expect("ERROR: Failed to create directory");
+    }
+
+    Ok(())
+}
+
+pub fn generate_dir(template: &Template, project_path: &Path) -> io::Result<()> {
+    for dir in &template.dir_list {
+        let target = dir.clone();
+        match target.as_str() {
+            "include" => create_directory(project_path, &template.dir_info.include),
+            "src" => create_directory(project_path, &template.dir_info.src),
+            "tests" => create_directory(project_path, &template.dir_info.tests),
+            "app" => create_directory(project_path, &template.dir_info.app),
+            "scripts" => create_directory(project_path, &template.dir_info.scripts),
+            _ => return Err(io::Error::new(io::ErrorKind::Other, "Dir Create ERROR!")),
+        };
+    }
+
+    Ok(())
+}
+
+fn write_file(file_path: &Path, contents: &[String]) -> io::Result<()> {
+    let mut target = File::create(file_path)?;
+    for line in contents {
+        target.write_all(line.as_bytes())?;
+        target.write_all(b"\n")?;
+    }
+    Ok(())
+}
+
+pub fn generate_files(
+    project_path: &Path,
+    project_name: String,
+    file_list: &[String],
+    file_template: &mut FileContents,
+) -> io::Result<()> {
+    file_template.cmakelists_txt[1] = file_template.cmakelists_txt[1].replace("{}", &project_name);
+    file_template.src_hello_cc[3] = file_template.src_hello_cc[3].replace("{}", &project_name);
+    for file in file_list {
+        let content = utils::convert_to_snake_case(&file);
+        let file_path = project_path.join(&file);
+        match content.as_str() {
+            "cmakelists_txt" => write_file(&file_path, &file_template.cmakelists_txt),
+            "main_cc" => write_file(&file_path, &file_template.main_cc),
+            "src_cmakelists_txt" => write_file(&file_path, &file_template.src_cmakelists_txt),
+            "src_hello_cc" => write_file(&file_path, &file_template.src_hello_cc),
+            "include_hello_h" => write_file(&file_path, &file_template.include_hello_h),
+            "scripts_run_sh" => write_file(&file_path, &file_template.scripts_run_sh),
+            _ => return Err(io::Error::new(io::ErrorKind::Other, "File Create ERROR!")),
+        };
+    }
+
+    Ok(())
+}
+
