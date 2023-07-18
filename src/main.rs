@@ -8,47 +8,27 @@ use std::fs::{self, create_dir, File};
 use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 
-use vcli::{generate_dir, generate_files, get_dir_lists, Args, FileTree, Template};
+use vcli::Args;
 
-const FILE_TREE_JSON: &str = include_str!("../templates/cpp.json");
+mod lang;
 
 fn main() {
     let args = Args::parse();
 
-    let mut template: Template =
-        serde_json::from_str(&FILE_TREE_JSON).expect("Failed to parse template JSON");
-
+    let language: &str = &args.language;
     let project_name = &args.project_name;
+
     if Path::new(project_name).exists() {
         println!("Target Project {} Already Exists!", project_name);
         return;
     }
 
-    fs::create_dir(project_name).expect("Fail to create project dir");
+    match language {
+        "cpp" => lang::cpp::init_cpp(project_name),
+        "shell" => lang::shell::hello_shell(),
+        _ => return,
+    };
 
-    let project_path = Path::new(project_name);
-
-    if let Err(err) = generate_dir(&template, &project_path) {
-        eprintln!("ERROR generate_dir {}", err);
-    }
-
-    if let Err(err) = generate_files(
-        &project_path,
-        project_name.clone(),
-        &template.file_list,
-        &mut template.file_contents,
-    ) {
-        eprintln!("Error writing to file: {}", err);
-    }
-
-    println!("C++ project {} initialized successfully!", project_name);
+    return;
 }
 
-fn write_file(file_path: &Path, contents: &[String]) -> io::Result<()> {
-    let mut target = File::create(file_path)?;
-    for line in contents {
-        target.write_all(line.as_bytes())?;
-        target.write_all(b"\n")?;
-    }
-    Ok(())
-}
